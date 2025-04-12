@@ -9,12 +9,13 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import PageLayout from '@/components/Layout/PageLayout';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { playClickSound } from '@/utils/soundEffects';
+import { supabase } from '@/integrations/supabase/client';
 
 // Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 const UploadPage = () => {
-  const [userCode, setUserCode] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [title, setTitle] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -126,14 +127,12 @@ const UploadPage = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    playClickSound();
     
-    const hasValidCode = userCode.length === 7;
-    const hasValidWhatsapp = whatsappNumber.length >= 10;
-    
-    if (!hasValidCode && !hasValidWhatsapp) {
+    if (!whatsappNumber) {
       toast({
-        title: "Login Required",
-        description: "Please enter your 7-digit code or WhatsApp number.",
+        title: "WhatsApp Number Required",
+        description: "Please enter your WhatsApp number to upload.",
         variant: "destructive"
       });
       return;
@@ -159,17 +158,87 @@ const UploadPage = () => {
     
     setIsUploading(true);
     
-    // This would connect to Supabase Storage and DB in the real implementation
-    // Simulate upload delay
-    setTimeout(() => {
-      setIsUploading(false);
+    try {
+      // Check if user exists, if not create one
+      let userId;
+      
+      // Check if user with this WhatsApp number exists
+      const { data: existingUsers, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('whatsapp_number', whatsappNumber)
+        .limit(1);
+      
+      if (userError) throw userError;
+      
+      if (existingUsers && existingUsers.length > 0) {
+        userId = existingUsers[0].id;
+      } else {
+        // Create new user
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert([{ whatsapp_number: whatsappNumber }])
+          .select('id')
+          .single();
+        
+        if (createError) throw createError;
+        userId = newUser.id;
+      }
+      
+      // Upload video to storage
+      const videoFileName = `${userId}_${Date.now()}_${videoFile.name.replace(/\s+/g, '_')}`;
+      const { error: videoUploadError } = await supabase
+        .storage
+        .from('performance-videos')
+        .upload(videoFileName, videoFile);
+      
+      if (videoUploadError) throw videoUploadError;
+      
+      // Get video URL
+      const { data: videoData } = supabase
+        .storage
+        .from('performance-videos')
+        .getPublicUrl(videoFileName);
+      
+      let thumbnailUrl = null;
+      
+      // If thumbnail provided, upload it
+      if (photoFile) {
+        const photoFileName = `${userId}_${Date.now()}_${photoFile.name.replace(/\s+/g, '_')}`;
+        const { error: photoUploadError } = await supabase
+          .storage
+          .from('profile-images')
+          .upload(photoFileName, photoFile);
+        
+        if (photoUploadError) throw photoUploadError;
+        
+        const { data: photoData } = supabase
+          .storage
+          .from('profile-images')
+          .getPublicUrl(photoFileName);
+        
+        thumbnailUrl = photoData.publicUrl;
+      }
+      
+      // Create performance record
+      const { error: performanceError } = await supabase
+        .from('performances')
+        .insert([{
+          user_id: userId,
+          song_title: title,
+          video_url: videoData.publicUrl,
+          thumbnail_url: thumbnailUrl,
+          uploader_name: `User-${whatsappNumber.slice(-4)}` // Use last 4 digits as name placeholder
+        }]);
+      
+      if (performanceError) throw performanceError;
+      
       toast({
         title: "Upload Successful!",
         description: "Your performance has been uploaded and will be reviewed shortly.",
       });
       
       // Clear form
-      setUserCode('');
       setWhatsappNumber('');
       setTitle('');
       setVideoFile(null);
@@ -180,7 +249,17 @@ const UploadPage = () => {
       const photoInput = document.getElementById('photo-upload') as HTMLInputElement;
       if (videoInput) videoInput.value = '';
       if (photoInput) photoInput.value = '';
-    }, 2000);
+      
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "There was an error uploading your performance.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -197,28 +276,15 @@ const UploadPage = () => {
               <AlertCircle className="h-4 w-4 text-karaoke-yellow" />
               <AlertTitle className="text-karaoke-yellow">Important</AlertTitle>
               <AlertDescription className="text-white/80">
-                You need a 7-digit code from a karaoke event to upload. Get yours at the next Dean De Karaoke Guy event!
+                Enter your WhatsApp number to log in and upload your performance to Sing It Own It!
               </AlertDescription>
             </Alert>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="user-code" className="text-white">Your 7-Digit Code</Label>
-                <Input
-                  id="user-code"
-                  type="text" 
-                  maxLength={7}
-                  placeholder="Enter your code" 
-                  value={userCode}
-                  onChange={(e) => setUserCode(e.target.value)}
-                  className="bg-black/40 border-white/30 text-white"
-                />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="whatsapp" className="text-white flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  WhatsApp Number (Optional)
+                  WhatsApp Number
                 </Label>
                 <div className="flex">
                   <Input
@@ -228,6 +294,7 @@ const UploadPage = () => {
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value)}
                     className="bg-black/40 border-white/30 text-white rounded-r-none"
+                    required
                   />
                   <TooltipProvider>
                     <Tooltip>
@@ -241,7 +308,7 @@ const UploadPage = () => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Using your WhatsApp number has benefits like updates, promotions, and more!</p>
+                        <p>Using your WhatsApp number gives you benefits like updates, promotions, and easier logins!</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -336,6 +403,7 @@ const UploadPage = () => {
                 type="submit" 
                 className="w-full bg-gradient-to-r from-karaoke-yellow to-karaoke-pink hover:from-karaoke-yellow/90 hover:to-karaoke-pink/90 text-white font-bold py-3"
                 disabled={isUploading}
+                onClick={() => playClickSound()}
               >
                 {isUploading ? "Uploading..." : "Upload Performance"}
               </Button>
@@ -352,7 +420,7 @@ const UploadPage = () => {
           <div className="mt-8 bg-black/40 rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-bold mb-4">How It Works</h2>
             <ol className="list-decimal list-inside space-y-3 text-white/90">
-              <li>Enter your 7-digit event code (received at a karaoke event) or WhatsApp number</li>
+              <li>Enter your WhatsApp number to log in</li>
               <li>Upload your performance video (max 50MB)</li>
               <li>Add an optional thumbnail image</li>
               <li>Wait for approval (usually within 24 hours)</li>
