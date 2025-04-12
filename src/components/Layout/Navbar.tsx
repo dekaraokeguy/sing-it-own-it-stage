@@ -28,7 +28,11 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-xl md:text-2xl font-bold neon-text">Dean De Karaoke Guy</span>
+              <img 
+                src="/lovable-uploads/dad69e7c-a979-464e-b5dd-00a563b5a544.png" 
+                alt="Dean De Karaoke Guy" 
+                className="h-10 mr-2"
+              />
             </Link>
           </div>
           
@@ -48,7 +52,7 @@ const Navbar = () => {
                   )}
                 >
                   <IconComponent className="mr-1 h-4 w-4" />
-                  {link.name === 'Countdown' ? 'Sing It Own It Countdown' : link.name}
+                  {link.name === 'Countdown' ? 'Countdown' : link.name}
                 </Link>
               );
             })}
@@ -82,7 +86,7 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                 >
                   <IconComponent className="mr-2 h-5 w-5" />
-                  {link.name === 'Countdown' ? 'Sing It Own It Countdown' : link.name}
+                  {link.name === 'Countdown' ? 'Countdown' : link.name}
                 </Link>
               );
             })}

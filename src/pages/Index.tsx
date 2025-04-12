@@ -26,24 +26,18 @@ const Index = () => {
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gradient-to-b from-karaoke-purple via-karaoke-pink to-karaoke-blue text-white px-4 py-16 text-center">
           <div className={`transition-all duration-1000 ${logoAnimate ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
-            <div className="relative mb-6">
-              <h1 className="text-5xl sm:text-7xl font-bold text-white mb-4 logo-animate">
-                <span className="block">DEAN</span> 
-                <span className="block text-3xl sm:text-5xl">DE KARAOKE GUY</span>
-              </h1>
-              <div className="absolute inset-0 bg-shimmer animate-shimmer"></div>
-            </div>
-            
-            <div className="mb-8 animate-bounce-subtle">
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-karaoke-yellow neon-text">
-                SING IT OWN IT
-              </h2>
+            <div className="relative mb-6 flex flex-col items-center">
+              <img 
+                src="/lovable-uploads/f7911802-f5a5-4147-aefa-1fa881d7c4f8.png" 
+                alt="Sing It Own It" 
+                className="h-48 md:h-64 mb-4 animate-pulse-slow"
+              />
               <p className="text-xl sm:text-2xl font-bold text-white animate-pulse-slow mt-2">
                 No Shame If Yuh Buss
               </p>
             </div>
             
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
               <Button
                 asChild
                 onClick={playClickSound}
