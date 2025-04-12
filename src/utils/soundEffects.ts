@@ -1,10 +1,11 @@
 
 // Sound effects for the Sing It Own It karaoke app
 
-// Sound file URLs - replace with actual Supabase URLs when available
-const CLICK_SOUND_URL = "https://example.com/click.mp3";
-const HOVER_SOUND_URL = "https://example.com/hover.mp3";
-const SUCCESS_SOUND_URL = "https://example.com/success.mp3";
+// Sound file URLs from Supabase storage
+const SUPABASE_STORAGE_URL = "https://eyuolxpeigtqoqlponqm.supabase.co/storage/v1/object/public";
+const CLICK_SOUND_URL = `${SUPABASE_STORAGE_URL}/sound-effects/click.mp3`;
+const HOVER_SOUND_URL = `${SUPABASE_STORAGE_URL}/sound-effects/hover.mp3`;
+const SUCCESS_SOUND_URL = `${SUPABASE_STORAGE_URL}/sound-effects/success.mp3`;
 
 // Audio objects with lazy loading to avoid unnecessary downloads
 let clickSound: HTMLAudioElement | null = null;

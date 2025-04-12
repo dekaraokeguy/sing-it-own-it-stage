@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { playClickSound } from '@/utils/soundEffects';
 
 interface QRCodeGeneratorProps {
   url: string;
@@ -26,6 +27,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   }, [url, size]);
   
   const handleShare = () => {
+    playClickSound();
     if (navigator.share) {
       navigator.share({
         title: title,
@@ -43,6 +45,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   };
   
   const handleDownload = () => {
+    playClickSound();
     const link = document.createElement('a');
     link.href = qrSrc;
     link.download = `${title.replace(/\s+/g, '-').toLowerCase()}-qrcode.png`;
