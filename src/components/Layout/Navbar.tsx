@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Mic2, Camera, Music, Book, Home, User, PhoneCall } from 'lucide-react';
+import { Menu, X, Mic2, Camera, Video, Book, Home, User, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -13,7 +13,7 @@ const Navbar = () => {
     { name: 'Countdown', path: '/performances', icon: Mic2 },
     { name: 'Upload', path: '/upload', icon: Camera },
     { name: 'Gallery', path: '/gallery', icon: Camera },
-    { name: 'Songbooks', path: '/songbooks', icon: Book },
+    { name: 'Performance Videos', path: '/performance-videos', icon: Video },
     { name: 'About', path: '/about', icon: User },
     { name: 'Contact', path: '/contact', icon: PhoneCall },
   ];

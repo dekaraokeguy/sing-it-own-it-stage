@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Performances from "./pages/Performances";
 import UploadPage from "./pages/UploadPage";
 import Gallery from "./pages/Gallery";
-import Songbooks from "./pages/Songbooks";
+import PerformanceVideos from "./pages/PerformanceVideos";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -26,7 +26,7 @@ const App = () => (
           <Route path="/performances" element={<Performances />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/gallery" element={<Gallery />} />
-          <Route path="/songbooks" element={<Songbooks />} />
+          <Route path="/performance-videos" element={<PerformanceVideos />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
