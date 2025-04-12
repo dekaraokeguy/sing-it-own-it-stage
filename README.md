@@ -1,73 +1,62 @@
-# Welcome to your Lovable project
 
-## Project info
+# Sing It Own It - Dean De Karaoke Guy Platform
 
-**URL**: https://lovable.dev/projects/e98cc0bb-29a6-410c-8a37-44a91894b86d
+A vibrant karaoke platform for "Dean De Karaoke Guy" featuring the "Sing It Own It Countdown" where users can upload performances, vote on their favorites, and engage with the community.
 
-## How can I edit this code?
+## About the Project
 
-There are several ways of editing your application.
+This platform serves as a hub for karaoke enthusiasts, allowing them to:
 
-**Use Lovable**
+- View and vote on performances in the "Sing It Own It Countdown"
+- Upload their own karaoke performances
+- Browse a photo gallery from past events
+- Access songbooks for practice
+- Learn about Dean De Karaoke Guy and his services
+- Contact for event bookings
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e98cc0bb-29a6-410c-8a37-44a91894b86d) and start prompting.
+The tagline "No Shame If Yuh Buss" encapsulates the platform's spirit of fun and self-expression.
 
-Changes made via Lovable will be committed automatically to this repo.
+## Technology Stack
 
-**Use your preferred IDE**
+- React with TypeScript
+- TailwindCSS for styling
+- React Router for navigation
+- Lucide React for icons
+- Various UI components from shadcn/ui
+- Designed for Supabase backend integration
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Database Schema
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The platform is designed to work with the following Supabase database schema:
 
-Follow these steps:
+- **users**: Stores user information with anonymous login codes
+- **videos**: Stores performance videos with titles, URLs, and vote counts
+- **votes**: Records individual user votes (1-5 stars) for performances
+- **sponsors**: Manages sponsor information for display in the footer
+- **photos**: Stores gallery photos from events
+- **songbooks**: Stores downloadable songbook files
+
+## Features
+
+- Caribbean-inspired vibrant design with animations
+- Mobile-responsive layout
+- QR code sharing for performances
+- Star rating system for voting
+- File uploads for videos, photos, and songbooks
+- Anonymous login system with 7-digit codes
+
+## Development
+
+This project was created with Lovable AI and is designed for easy connection to Supabase for database functionality.
+
+To run the project locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The site can be deployed using Vercel, Netlify, or any React-compatible hosting platform. For full functionality, it should be connected to a Supabase backend with the appropriate schema.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e98cc0bb-29a6-410c-8a37-44a91894b86d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

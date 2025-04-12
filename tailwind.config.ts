@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				karaoke: {
+					purple: '#6930c3',
+					pink: '#e83e8c',
+					yellow: '#ffc107',
+					blue: '#3a86ff',
+					red: '#dc3545',
+					green: '#28a745',
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' },
+				},
+				'shimmer': {
+					'0%': { 
+						backgroundPosition: '-100% 0',
+						opacity: '0.7'
+					},
+					'100%': { 
+						backgroundPosition: '200% 0',
+						opacity: '1'
+					},
+				},
+				'bounce-subtle': {
+					'0%, 100%': { 
+						transform: 'translateY(0)' 
+					},
+					'50%': { 
+						transform: 'translateY(-5px)' 
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'shimmer': 'shimmer 4s infinite',
+				'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'shimmer-gradient': 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%)'
 			}
 		}
 	},
