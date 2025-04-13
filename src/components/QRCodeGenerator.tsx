@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Share2, Download } from 'lucide-react';
+import { Share2, Download, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { playClickSound } from '@/utils/soundEffects';
@@ -10,13 +10,15 @@ interface QRCodeGeneratorProps {
   title?: string;
   description?: string;
   size?: number;
+  isExternal?: boolean;
 }
 
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ 
   url, 
   title = "Share this performance", 
   description = "Scan this QR code to view and vote",
-  size = 150
+  size = 150,
+  isExternal = false
 }) => {
   const [qrSrc, setQrSrc] = useState<string>('');
   
@@ -55,6 +57,11 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
     toast.success("QR code downloaded!");
   };
   
+  const handleOpenLink = () => {
+    playClickSound();
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  
   return (
     <div className="bg-black/40 p-4 rounded-lg text-center">
       <h3 className="text-lg font-semibold mb-3">{title}</h3>
@@ -73,7 +80,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
       
       <p className="text-sm my-3">{description}</p>
       
-      <div className="flex gap-2 justify-center">
+      <div className="flex flex-wrap gap-2 justify-center">
         <Button 
           onClick={handleShare}
           variant="outline"
@@ -91,6 +98,17 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
           <Download className="h-4 w-4 mr-2" />
           Download
         </Button>
+        
+        {isExternal && (
+          <Button 
+            onClick={handleOpenLink}
+            variant="outline"
+            className="border-karaoke-blue text-karaoke-blue hover:bg-karaoke-blue/20"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open Link
+          </Button>
+        )}
       </div>
     </div>
   );
