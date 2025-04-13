@@ -23,7 +23,7 @@ interface Performance {
 const PerformanceVideos = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [videos, setVideos] = useState<Performance[]>([]);
-  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -98,32 +98,32 @@ const PerformanceVideos = () => {
 
   // Check for existing login
   useEffect(() => {
-    const storedNumber = localStorage.getItem('whatsapp_number');
+    const storedNumber = localStorage.getItem('phone_number');
     if (storedNumber) {
-      setWhatsappNumber(storedNumber);
+      setPhoneNumber(storedNumber);
       setIsLoggedIn(true);
     }
   }, []);
 
-  // Handle login with WhatsApp number
+  // Handle login with phone number
   const handleLogin = async () => {
     playClickSound();
     
-    if (!whatsappNumber || whatsappNumber.length < 10) {
+    if (!phoneNumber || phoneNumber.length < 5) {
       toast({
         title: "Invalid Number",
-        description: "Please enter a valid WhatsApp number.",
+        description: "Please enter a valid phone number.",
         variant: "destructive"
       });
       return;
     }
     
     try {
-      // Check if user exists with this WhatsApp number
+      // Check if user exists with this phone number
       const { data, error } = await supabase
         .from('users')
         .select('id')
-        .eq('whatsapp_number', whatsappNumber)
+        .eq('whatsapp_number', phoneNumber)
         .limit(1);
       
       if (error) throw error;
@@ -132,14 +132,14 @@ const PerformanceVideos = () => {
       if (!data || data.length === 0) {
         const { error: createError } = await supabase
           .from('users')
-          .insert([{ whatsapp_number: whatsappNumber }]);
+          .insert([{ whatsapp_number: phoneNumber }]);
           
         if (createError) throw createError;
       }
       
       // Set user as logged in
       setIsLoggedIn(true);
-      localStorage.setItem('whatsapp_number', whatsappNumber);
+      localStorage.setItem('phone_number', phoneNumber);
       toast({
         title: "Login Successful",
         description: "You can now vote for performances!",
@@ -161,7 +161,7 @@ const PerformanceVideos = () => {
     if (!isLoggedIn) {
       toast({
         title: "Login Required",
-        description: "Please login with your WhatsApp number to vote.",
+        description: "Please login with your phone number to vote.",
         variant: "destructive"
       });
       return;
@@ -183,11 +183,11 @@ const PerformanceVideos = () => {
     }
     
     try {
-      // Get user ID from WhatsApp number
+      // Get user ID from phone number
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id')
-        .eq('whatsapp_number', whatsappNumber)
+        .eq('whatsapp_number', phoneNumber)
         .single();
         
       if (userError) throw userError;
@@ -197,7 +197,7 @@ const PerformanceVideos = () => {
         .from('votes')
         .insert([{
           performance_id: videoId,
-          user_id: userData.id,
+          user_id: userData?.id,
           rating: rating
         }]);
         
@@ -252,9 +252,9 @@ const PerformanceVideos = () => {
                   <div className="flex">
                     <Input 
                       type="tel" 
-                      placeholder="Enter your WhatsApp number" 
-                      value={whatsappNumber}
-                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      placeholder="Enter your phone number" 
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                       className="flex-grow px-4 py-2 bg-black/40 border border-white/30 rounded-l-md focus:outline-none focus:ring-2 focus:ring-karaoke-pink text-white"
                     />
                     <TooltipProvider>
@@ -264,16 +264,11 @@ const PerformanceVideos = () => {
                             onClick={handleLogin}
                             className="bg-green-500 hover:bg-green-600 rounded-l-none flex items-center"
                           >
-                            <img 
-                              src="/lovable-uploads/721a2af9-55db-4eea-804a-766b032c872b.png" 
-                              alt="WhatsApp" 
-                              className="h-5 w-5 mr-2"
-                            />
                             Login
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Using your WhatsApp number gives you benefits like updates, promotions, and easier logins!</p>
+                          <p>Login with your phone number to vote for performances!</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
