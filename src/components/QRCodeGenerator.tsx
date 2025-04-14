@@ -15,8 +15,8 @@ interface QRCodeGeneratorProps {
 
 const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({ 
   url, 
-  title = "Share this performance", 
-  description = "Scan this QR code to view and vote",
+  title = "Share the Sing It Own It App", 
+  description = "Scan this QR code to open the app",
   size = 150,
   isExternal = false
 }) => {

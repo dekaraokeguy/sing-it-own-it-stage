@@ -1,9 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mic2, Music, Camera, Video } from 'lucide-react';
+import { Mic2, Camera, Video, Home, User, PhoneCall } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/Layout/PageLayout';
+import { playClickSound } from '@/utils/soundEffects';
+import QRCodeGenerator from '@/components/QRCodeGenerator';
 
 const Index = () => {
   const [logoAnimate, setLogoAnimate] = useState(false);
@@ -13,12 +15,6 @@ const Index = () => {
     const timer = setTimeout(() => setLogoAnimate(true), 500);
     return () => clearTimeout(timer);
   }, []);
-
-  // Audio click effect
-  const playClickSound = () => {
-    // This would play a click sound if we had one
-    console.log("Click sound would play here");
-  };
 
   return (
     <PageLayout>
@@ -59,6 +55,14 @@ const Index = () => {
                 </Link>
               </Button>
             </div>
+
+            <div className="mt-8">
+              <QRCodeGenerator 
+                url={window.location.href}
+                title="Share Sing It Own It!"
+                description="Scan to share this app with your friends"
+              />
+            </div>
           </div>
         </div>
         
@@ -95,12 +99,12 @@ const Index = () => {
               <div className="bg-black/30 p-6 rounded-xl shadow-lg transform transition-all hover:-translate-y-1 hover:shadow-xl">
                 <div className="flex justify-center mb-4">
                   <div className="p-3 rounded-full bg-karaoke-blue/30">
-                    <Music className="h-8 w-8 text-karaoke-blue" />
+                    <Video className="h-8 w-8 text-karaoke-blue" />
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-center mb-2">Access Songbooks</h3>
+                <h3 className="text-xl font-semibold text-center mb-2">View Performances</h3>
                 <p className="text-center text-white/80">
-                  Browse and download our extensive collection of songbooks for your next karaoke session.
+                  Browse our collection of amazing karaoke performances from talented singers.
                 </p>
               </div>
             </div>

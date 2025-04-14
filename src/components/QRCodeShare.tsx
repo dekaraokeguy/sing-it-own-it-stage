@@ -5,12 +5,17 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface QRCodeShareProps {
-  videoId: string;
-  videoTitle: string;
+  videoId?: string;
+  videoTitle?: string;
+  appUrl?: string;
 }
 
-const QRCodeShare: React.FC<QRCodeShareProps> = ({ videoId, videoTitle }) => {
-  const shareUrl = `${window.location.origin}/performances/${videoId}`;
+const QRCodeShare: React.FC<QRCodeShareProps> = ({ 
+  videoId, 
+  videoTitle, 
+  appUrl = window.location.origin 
+}) => {
+  const shareUrl = videoId ? `${window.location.origin}/performances/${videoId}` : appUrl;
   
   // In a real implementation, we would use a library like qrcode.react here
   const generateQRPlaceholder = () => {
@@ -35,8 +40,8 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({ videoId, videoTitle }) => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: videoTitle,
-        text: `Check out this karaoke performance: ${videoTitle}`,
+        title: videoTitle || "Sing It Own It",
+        text: videoTitle ? `Check out this karaoke performance: ${videoTitle}` : "Check out the Sing It Own It app!",
         url: shareUrl,
       })
       .then(() => toast.success("Shared successfully!"))
@@ -51,11 +56,11 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({ videoId, videoTitle }) => {
 
   return (
     <div className="bg-black/40 p-4 rounded-lg text-center">
-      <h3 className="text-lg font-semibold mb-3">Share This Performance</h3>
+      <h3 className="text-lg font-semibold mb-3">Share This App</h3>
       
       {generateQRPlaceholder()}
       
-      <p className="text-sm my-3">Scan or share this QR code to let others view this performance!</p>
+      <p className="text-sm my-3">Scan this QR code to open the app!</p>
       
       <Button 
         onClick={handleShare}
@@ -63,7 +68,7 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({ videoId, videoTitle }) => {
         className="border-karaoke-yellow text-karaoke-yellow hover:bg-karaoke-yellow/20"
       >
         <Share2 className="h-4 w-4 mr-2" />
-        Share
+        Share App
       </Button>
     </div>
   );
