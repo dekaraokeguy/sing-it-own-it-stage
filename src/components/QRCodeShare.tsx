@@ -43,9 +43,9 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({
         <QRCode 
           value={shareUrl}
           size={112}
-          bgColor={"#FFFFFF"}
-          fgColor={"#000000"}
-          level={"L"}
+          bgColor="#FFFFFF"
+          fgColor="#000000"
+          ecLevel="L"
           includeMargin={false}
         />
       </div>
