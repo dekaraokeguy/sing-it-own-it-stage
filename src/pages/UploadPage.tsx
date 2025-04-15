@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Upload as UploadIcon, Camera, AlertCircle, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import PageLayout from '@/components/Layout/PageLayout';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { playClickSound } from '@/utils/soundEffects';
-import { supabase } from '@/integrations/supabase/client';
+import { storage, db } from '@/firebase/config';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -23,38 +24,29 @@ const UploadPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
   const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
-  const { toast } = useToast();
-  
+
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: "File Too Large",
-          description: "Video file must be under 50MB.",
-          variant: "destructive"
-        });
+        toast.error("Video file must be under 50MB.");
         return;
       }
       setVideoFile(file);
     }
   };
-  
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) { // 5MB
-        toast({
-          title: "File Too Large",
-          description: "Image file must be under 5MB.",
-          variant: "destructive"
-        });
+        toast.error("Image file must be under 5MB.");
         return;
       }
       setPhotoFile(file);
     }
   };
-  
+
   const handleVideoDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDraggingVideo(false);
@@ -62,27 +54,19 @@ const UploadPage = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (!file.type.startsWith('video/')) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please drop a video file.",
-          variant: "destructive"
-        });
+        toast.error("Please drop a video file.");
         return;
       }
       
       if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: "File Too Large",
-          description: "Video file must be under 50MB.",
-          variant: "destructive"
-        });
+        toast.error("Video file must be under 50MB.");
         return;
       }
       
       setVideoFile(file);
     }
   }, [toast]);
-  
+
   const handlePhotoDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDraggingPhoto(false);
@@ -90,153 +74,101 @@ const UploadPage = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please drop an image file.",
-          variant: "destructive"
-        });
+        toast.error("Please drop an image file.");
         return;
       }
       
       if (file.size > 5 * 1024 * 1024) { // 5MB
-        toast({
-          title: "File Too Large",
-          description: "Image file must be under 5MB.",
-          variant: "destructive"
-        });
+        toast.error("Image file must be under 5MB.");
         return;
       }
       
       setPhotoFile(file);
     }
   }, [toast]);
-  
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
   }, []);
-  
+
   const handleDragEnter = useCallback((e: React.DragEvent, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     e.preventDefault();
     setter(true);
   }, []);
-  
+
   const handleDragLeave = useCallback((e: React.DragEvent, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     e.preventDefault();
     setter(false);
   }, []);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
     
     if (!whatsappNumber) {
-      toast({
-        title: "WhatsApp Number Required",
-        description: "Please enter your WhatsApp number to upload.",
-        variant: "destructive"
-      });
+      toast.error("Please enter your WhatsApp number to upload.");
       return;
     }
     
     if (!title) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a title for your performance.",
-        variant: "destructive"
-      });
+      toast.error("Please enter a title for your performance.");
       return;
     }
     
     if (!videoFile) {
-      toast({
-        title: "Video Required",
-        description: "Please select a video to upload.",
-        variant: "destructive"
-      });
+      toast.error("Please select a video to upload.");
       return;
     }
     
     setIsUploading(true);
     
     try {
-      // Check if user exists, if not create one
       let userId;
       
-      // Check if user with this WhatsApp number exists
-      const { data: existingUsers, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('whatsapp_number', whatsappNumber)
-        .limit(1);
+      // Check if user exists in Firestore
+      const usersRef = collection(db, 'users');
+      const userQuery = doc(usersRef, whatsappNumber);
+      const userDoc = await getDoc(userQuery);
       
-      if (userError) throw userError;
-      
-      if (existingUsers && existingUsers.length > 0) {
-        userId = existingUsers[0].id;
+      if (userDoc.exists()) {
+        userId = userDoc.id;
       } else {
         // Create new user
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert([{ whatsapp_number: whatsappNumber }])
-          .select('id')
-          .single();
-        
-        if (createError) throw createError;
-        userId = newUser.id;
+        await setDoc(doc(db, 'users', whatsappNumber), {
+          whatsapp_number: whatsappNumber,
+          created_at: serverTimestamp()
+        });
+        userId = whatsappNumber;
       }
       
-      // Upload video to storage
-      const videoFileName = `${userId}_${Date.now()}_${videoFile.name.replace(/\s+/g, '_')}`;
-      const { error: videoUploadError } = await supabase
-        .storage
-        .from('performance-videos')
-        .upload(videoFileName, videoFile);
-      
-      if (videoUploadError) throw videoUploadError;
-      
-      // Get video URL
-      const { data: videoData } = supabase
-        .storage
-        .from('performance-videos')
-        .getPublicUrl(videoFileName);
+      // Upload video to Firebase Storage
+      const videoFileName = `performances/${userId}_${Date.now()}_${videoFile.name.replace(/\s+/g, '_')}`;
+      const videoStorageRef = ref(storage, videoFileName);
+      await uploadBytes(videoStorageRef, videoFile);
+      const videoUrl = await getDownloadURL(videoStorageRef);
       
       let thumbnailUrl = null;
       
       // If thumbnail provided, upload it
       if (photoFile) {
-        const photoFileName = `${userId}_${Date.now()}_${photoFile.name.replace(/\s+/g, '_')}`;
-        const { error: photoUploadError } = await supabase
-          .storage
-          .from('profile-images')
-          .upload(photoFileName, photoFile);
-        
-        if (photoUploadError) throw photoUploadError;
-        
-        const { data: photoData } = supabase
-          .storage
-          .from('profile-images')
-          .getPublicUrl(photoFileName);
-        
-        thumbnailUrl = photoData.publicUrl;
+        const photoFileName = `thumbnails/${userId}_${Date.now()}_${photoFile.name.replace(/\s+/g, '_')}`;
+        const photoStorageRef = ref(storage, photoFileName);
+        await uploadBytes(photoStorageRef, photoFile);
+        thumbnailUrl = await getDownloadURL(photoStorageRef);
       }
       
-      // Create performance record
-      const { error: performanceError } = await supabase
-        .from('performances')
-        .insert([{
-          user_id: userId,
-          song_title: title,
-          video_url: videoData.publicUrl,
-          thumbnail_url: thumbnailUrl,
-          uploader_name: `User-${whatsappNumber.slice(-4)}` // Use last 4 digits as name placeholder
-        }]);
-      
-      if (performanceError) throw performanceError;
-      
-      toast({
-        title: "Upload Successful!",
-        description: "Your performance has been uploaded and will be reviewed shortly.",
+      // Create performance record in Firestore
+      await addDoc(collection(db, 'performances'), {
+        user_id: userId,
+        song_title: title,
+        video_url: videoUrl,
+        thumbnail_url: thumbnailUrl,
+        uploader_name: `User-${whatsappNumber.slice(-4)}`, // Use last 4 digits as name placeholder
+        votes: 0,
+        created_at: serverTimestamp()
       });
+      
+      toast.success("Your performance has been uploaded and will be reviewed shortly.");
       
       // Clear form
       setWhatsappNumber('');
@@ -252,11 +184,7 @@ const UploadPage = () => {
       
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast({
-        title: "Upload Failed",
-        description: error.message || "There was an error uploading your performance.",
-        variant: "destructive"
-      });
+      toast.error(error.message || "There was an error uploading your performance.");
     } finally {
       setIsUploading(false);
     }
