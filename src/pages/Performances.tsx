@@ -1,16 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
-import { Star, Trophy, Search, QrCode, Clock } from 'lucide-react';
+import { Star, Trophy, Search, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import PageLayout from '@/components/Layout/PageLayout';
-import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { useVoteLimiter } from '@/hooks/useVoteLimiter';
-import QRCodeGenerator from '@/components/QRCodeGenerator';
+import QRCodeShare from '@/components/QRCodeShare';
 import { playClickSound } from '@/utils/soundEffects';
-import { supabase } from '@/integrations/supabase/client';
+import { collection, getDocs, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '@/firebase/config';
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Performance {
   id: string;
@@ -22,82 +22,44 @@ interface Performance {
 }
 
 const Performances = () => {
+  const { isLoggedIn, user } = useFirebaseAuth();
   const [videos, setVideos] = useState<Performance[]>([]);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   const { votesRemaining, nextVoteTime, recordVote, canVoteFor } = useVoteLimiter();
   
-  // Fetch performances data from Supabase
   useEffect(() => {
     const fetchPerformances = async () => {
       try {
         setIsLoading(true);
-        // Get performances with their vote counts
-        const { data, error } = await supabase
-          .from('performances')
-          .select(`
-            id, 
-            song_title,
-            video_url,
-            thumbnail_url,
-            uploader_name
-          `);
-          
-        if (error) throw error;
+        const performancesQuery = query(
+          collection(db, 'performances'),
+          orderBy('votes', 'desc')
+        );
         
-        // Get vote summaries
-        const { data: voteSummary, error: voteSummaryError } = await supabase
-          .from('vote_summary')
-          .select('*');
-          
-        if (voteSummaryError) throw voteSummaryError;
+        const querySnapshot = await getDocs(performancesQuery);
+        const performancesData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          title: doc.data().title || doc.data().song_title,
+          url: doc.data().url || doc.data().video_url,
+          uploader: doc.data().uploader_name,
+          votes: doc.data().votes || 0,
+          photo_url: doc.data().photo_url || doc.data().thumbnail_url || '/lovable-uploads/624dcf17-1dd5-4d12-a2b7-3f1661f35717.png'
+        }));
         
-        // Combine data
-        const performancesWithVotes = data.map(perf => {
-          const voteInfo = voteSummary.find(vs => vs.performance_id === perf.id) || { total_votes: 0 };
-          return {
-            id: perf.id,
-            title: perf.song_title,
-            url: perf.video_url,
-            uploader: perf.uploader_name,
-            votes: voteInfo.total_votes || 0,
-            photo_url: perf.thumbnail_url || '/lovable-uploads/624dcf17-1dd5-4d12-a2b7-3f1661f35717.png'
-          };
-        });
-        
-        setVideos(performancesWithVotes);
+        setVideos(performancesData);
       } catch (error) {
         console.error('Error fetching performances:', error);
-        toast({
-          title: "Error Loading Performances",
-          description: "Could not load performances. Please try again later.",
-          variant: "destructive"
-        });
-        
-        // Fall back to mock data if API fails
-        setVideos([
-          { 
-            id: '1', 
-            title: 'Electric Slide Karaoke Performance', 
-            url: 'https://example.com/video1.mp4', 
-            uploader: 'Jane123', 
-            votes: 25,
-            photo_url: '/lovable-uploads/624dcf17-1dd5-4d12-a2b7-3f1661f35717.png'
-          },
-          // ... more mock data
-        ]);
+        toast.error("Could not load performances. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchPerformances();
-  }, [toast]);
+  }, []);
 
-  // Handle login with phone number
   const handleLogin = async () => {
     playClickSound();
     
@@ -111,115 +73,52 @@ const Performances = () => {
     }
     
     try {
-      // Check if user exists with this phone number
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('whatsapp_number', phoneNumber)
-        .limit(1);
-      
-      if (error) throw error;
-      
-      // If user doesn't exist, create one
-      if (!data || data.length === 0) {
-        const { error: createError } = await supabase
-          .from('users')
-          .insert([{ whatsapp_number: phoneNumber }]);
-          
-        if (createError) throw createError;
-      }
-      
-      // Set user as logged in
-      setIsLoggedIn(true);
+      // Store phone number in localStorage
       localStorage.setItem('phone_number', phoneNumber);
-      toast({
-        title: "Login Successful",
-        description: "You can now vote for performances!",
-      });
+      toast.success("Login Successful");
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        title: "Login Failed",
-        description: error.message || "Could not log in. Please try again.",
-        variant: "destructive"
-      });
+      toast.error(error.message || "Could not log in. Please try again.");
     }
   };
-  
-  // Check for existing login
-  useEffect(() => {
-    const storedNumber = localStorage.getItem('phone_number');
-    if (storedNumber) {
-      setPhoneNumber(storedNumber);
-      setIsLoggedIn(true);
-    }
-  }, []);
 
-  // Submit vote
+  // Handle voting
   const handleVote = async (videoId: string, rating: number) => {
     playClickSound();
     
     if (!isLoggedIn) {
-      toast({
-        title: "Login Required",
-        description: "Please login with your phone number to vote.",
-        variant: "destructive"
-      });
+      toast.error("Please login with your phone number to vote.");
       return;
     }
     
-    // Check vote limit
     if (!canVoteFor(videoId)) {
-      toast({
-        title: "Already Voted",
-        description: "You've already voted for this performance today.",
-        variant: "destructive"
-      });
+      toast.error("You've already voted for this performance today.");
       return;
     }
     
     if (!recordVote(videoId)) {
-      // recordVote returns false if limit exceeded and shows its own toast
       return;
     }
     
     try {
-      // Get user ID from phone number
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('whatsapp_number', phoneNumber)
-        .single();
-        
-      if (userError) throw userError;
-      
-      // Submit vote to Supabase
-      const { error: voteError } = await supabase
-        .from('votes')
-        .insert([{
-          performance_id: videoId,
-          user_id: userData?.id,
-          rating: rating
-        }]);
-        
-      if (voteError) throw voteError;
+      const performanceRef = doc(db, 'performances', videoId);
+      await updateDoc(performanceRef, {
+        votes: increment(1)
+      });
       
       // Update local state
-      setVideos(videos.map(video => 
-        video.id === videoId ? { ...video, votes: video.votes + 1 } : video
-      ));
+      setVideos(prevVideos => 
+        prevVideos.map(video => 
+          video.id === videoId 
+            ? { ...video, votes: video.votes + 1 } 
+            : video
+        )
+      );
       
-      toast({
-        title: "Vote Recorded!",
-        description: `You gave this performance ${rating} stars.`,
-      });
+      toast.success(`You gave this performance ${rating} stars.`);
     } catch (error: any) {
       console.error('Voting error:', error);
-      toast({
-        title: "Voting Failed",
-        description: error.message || "Could not record your vote. Please try again.",
-        variant: "destructive"
-      });
+      toast.error(error.message || "Could not record your vote. Please try again.");
     }
   };
 
@@ -228,7 +127,7 @@ const Performances = () => {
     video.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     video.uploader.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
+
   // Sort videos by votes in descending order
   const sortedVideos = [...filteredVideos].sort((a, b) => b.votes - a.votes);
 
@@ -244,7 +143,7 @@ const Performances = () => {
             />
             <p className="text-xl">Vote for your favorite performances!</p>
           </div>
-          
+
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="md:w-2/3">
               {!isLoggedIn && (
@@ -298,7 +197,7 @@ const Performances = () => {
                     className="text-white/70 hover:text-white"
                     onClick={() => {
                       localStorage.removeItem('phone_number');
-                      setIsLoggedIn(false);
+                      window.location.reload();
                     }}
                   >
                     Logout
@@ -319,11 +218,7 @@ const Performances = () => {
             </div>
             
             <div className="md:w-1/3">
-              <QRCodeGenerator 
-                url={window.location.href}
-                title="Share Sing It Own It!"
-                description="Scan to vote for your favorite performances"
-              />
+              <QRCodeShare />
             </div>
           </div>
           
@@ -399,6 +294,7 @@ const Performances = () => {
                         </div>
                       </div>
                       
+                      {/* Vote status messages */}
                       {!isLoggedIn ? (
                         <p className="text-xs text-white/50 mt-1 italic text-right">Login to vote</p>
                       ) : !canVoteFor(video.id) ? (
@@ -413,6 +309,7 @@ const Performances = () => {
             </div>
           )}
           
+          {/* Empty state */}
           {!isLoading && sortedVideos.length === 0 && (
             <div className="text-center py-12">
               <p className="text-xl">No performances found. {searchTerm ? 'Try a different search term.' : 'Be the first to upload!'}</p>

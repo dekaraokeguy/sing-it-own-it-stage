@@ -18,15 +18,18 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({
 }) => {
   const shareUrl = videoId ? `${window.location.origin}/performances/${videoId}` : appUrl;
   
-  const handleShare = () => {
+  const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({
-        title: videoTitle || "Sing It Own It",
-        text: videoTitle ? `Check out this karaoke performance: ${videoTitle}` : "Check out the Sing It Own It app!",
-        url: shareUrl,
-      })
-      .then(() => toast.success("Shared successfully!"))
-      .catch((error) => console.log('Error sharing:', error));
+      try {
+        await navigator.share({
+          title: videoTitle || "Sing It Own It",
+          text: videoTitle ? `Check out this karaoke performance: ${videoTitle}` : "Check out the Sing It Own It app!",
+          url: shareUrl,
+        });
+        toast.success("Shared successfully!");
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
     } else {
       // Fallback for browsers that don't support the Web Share API
       navigator.clipboard.writeText(shareUrl)
@@ -45,8 +48,7 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({
           size={112}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          ecLevel="L"
-          includeMargin={false}
+          level="L"
         />
       </div>
       
