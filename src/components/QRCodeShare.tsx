@@ -3,6 +3,7 @@ import React from 'react';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { QRCode } from 'react-qrcode-logo';
 
 interface QRCodeShareProps {
   videoId?: string;
@@ -17,26 +18,6 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({
 }) => {
   const shareUrl = videoId ? `${window.location.origin}/performances/${videoId}` : appUrl;
   
-  // In a real implementation, we would use a library like qrcode.react here
-  const generateQRPlaceholder = () => {
-    // This is a placeholder for the actual QR code
-    return (
-      <div className="w-32 h-32 bg-white p-2 rounded-lg mx-auto">
-        <div className="w-full h-full border-2 border-karaoke-purple grid grid-cols-3 grid-rows-3 gap-1 p-2">
-          <div className="bg-black" />
-          <div className="bg-black" />
-          <div className="bg-black" />
-          <div className="bg-black" />
-          <div className="bg-white" />
-          <div className="bg-black" />
-          <div className="bg-black" />
-          <div className="bg-black" />
-          <div className="bg-black" />
-        </div>
-      </div>
-    );
-  };
-
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -58,7 +39,16 @@ const QRCodeShare: React.FC<QRCodeShareProps> = ({
     <div className="bg-black/40 p-4 rounded-lg text-center">
       <h3 className="text-lg font-semibold mb-3">Share This App</h3>
       
-      {generateQRPlaceholder()}
+      <div className="w-32 h-32 mx-auto p-2 bg-white rounded-lg">
+        <QRCode 
+          value={shareUrl}
+          size={112}
+          bgColor={"#FFFFFF"}
+          fgColor={"#000000"}
+          level={"L"}
+          includeMargin={false}
+        />
+      </div>
       
       <p className="text-sm my-3">Scan this QR code to open the app!</p>
       
