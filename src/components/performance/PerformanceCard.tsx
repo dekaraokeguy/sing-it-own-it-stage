@@ -23,20 +23,12 @@ const PerformanceCard: React.FC<PerformanceCardProps> = ({
 }) => {
   const handleVote = async (videoId: string, rating: number) => {
     if (!isLoggedIn) {
-      toast({
-        title: "Login Required",
-        description: "Please login with your phone number to vote.",
-        variant: "destructive"
-      });
+      toast.error("Please login with your phone number to vote.");
       return;
     }
     
     if (!canVoteFor(videoId)) {
-      toast({
-        title: "Already Voted",
-        description: "You've already voted for this performance today.",
-        variant: "destructive"
-      });
+      toast.error("You've already voted for this performance today.");
       return;
     }
     
@@ -50,17 +42,10 @@ const PerformanceCard: React.FC<PerformanceCardProps> = ({
         votes: increment(1)
       });
       
-      toast({
-        title: "Vote Recorded!",
-        description: `You gave this performance ${rating} stars.`,
-      });
+      toast.success(`You gave this performance ${rating} stars.`);
     } catch (error: any) {
       console.error('Voting error:', error);
-      toast({
-        title: "Voting Failed",
-        description: error.message || "Could not record your vote. Please try again.",
-        variant: "destructive"
-      });
+      toast.error(error.message || "Could not record your vote. Please try again.");
     }
   };
 

@@ -64,11 +64,7 @@ const Performances = () => {
     playClickSound();
     
     if (!phoneNumber || phoneNumber.length < 5) {
-      toast({
-        title: "Invalid Number",
-        description: "Please enter a valid phone number.",
-        variant: "destructive"
-      });
+      toast.error("Please enter a valid phone number.");
       return;
     }
     
