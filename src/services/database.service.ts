@@ -4,7 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
+  query as firestoreQuery,
   where,
   orderBy,
   limit,
@@ -16,7 +16,8 @@ import {
   QueryConstraint,
   Timestamp,
   DocumentReference,
-  WhereFilterOp
+  WhereFilterOp,
+  CollectionReference
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
@@ -148,13 +149,14 @@ export const remove = async (
 };
 
 // Query documents with filtering, ordering and pagination
-export const query = async <T extends DbItem>(
+export const queryCollection = async <T extends DbItem>(
   collectionName: string,
   filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [],
   sortBy?: { field: string; direction: 'asc' | 'desc' },
   limitTo?: number
 ): Promise<T[]> => {
   try {
+    const collectionRef = collection(db, collectionName);
     const constraints: QueryConstraint[] = [];
     
     // Add filter conditions
@@ -172,7 +174,7 @@ export const query = async <T extends DbItem>(
       constraints.push(limit(limitTo));
     }
     
-    const q = query(collection(db, collectionName), ...constraints);
+    const q = firestoreQuery(collectionRef, ...constraints);
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map(doc => ({
@@ -190,7 +192,8 @@ export const getAll = async <T extends DbItem>(
   collectionName: string
 ): Promise<T[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, collectionName));
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...convertTimestamps(doc.data())
