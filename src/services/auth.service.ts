@@ -46,14 +46,15 @@ const mapFirebaseUser = (user: User | null): AuthUser | null => {
 const initializeRecaptcha = (containerId: string) => {
   if (typeof window !== 'undefined') {
     try {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      const recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
         'size': 'invisible',
         'callback': () => {
           // reCAPTCHA solved, allow signInWithPhoneNumber.
           console.log('reCAPTCHA verified');
         }
       });
-      return window.recaptchaVerifier;
+      window.recaptchaVerifier = recaptchaVerifier;
+      return recaptchaVerifier;
     } catch (error) {
       console.error('Error initializing recaptcha:', error);
       return null;
@@ -204,10 +205,4 @@ export const onAuthStateChanged = (callback: (user: AuthUser | null) => void) =>
   });
 };
 
-// Declare global types for the window object
-declare global {
-  interface Window {
-    recaptchaVerifier: any;
-    confirmationResult: any;
-  }
-}
+// No global declarations in this file - those will come from window.d.ts
