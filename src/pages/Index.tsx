@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mic2, Video, QrCode } from 'lucide-react';
+import { Mic2, Video, QrCode, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/Layout/PageLayout';
 import { playClickSound } from '@/utils/soundEffects';

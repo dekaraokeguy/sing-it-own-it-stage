@@ -85,7 +85,7 @@ const QRShareModal: React.FC<QRShareModalProps> = ({
               size={200}
               bgColor="#FFFFFF"
               fgColor="#000000"
-              level="L"
+              ecLevel="L"
               qrStyle="dots"
             />
           </div>

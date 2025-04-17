@@ -76,7 +76,7 @@ const QRShareBox: React.FC<QRShareBoxProps> = ({
           size={112}
           bgColor="#FFFFFF"
           fgColor="#000000"
-          level="L"
+          ecLevel="L"
           qrStyle="dots"
         />
       </div>
