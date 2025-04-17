@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Phone, LogIn } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { loginAnonymously, logout } from '@/services/auth.service';
+import { loginAnonymously, logout } from '@/services/auth';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { playClickSound } from '@/utils/soundEffects';

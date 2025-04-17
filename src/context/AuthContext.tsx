@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, AuthUser, getCurrentUser } from '@/services/auth.service';
+import { onAuthStateChange, AuthUser, getCurrentUser } from '@/services/auth';
 import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 
@@ -37,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Subscribe to auth state changes
-    const unsubscribe = onAuthStateChanged(async (authUser) => {
+    const unsubscribe = onAuthStateChange(async (authUser) => {
       setUser(authUser);
       setPhoneNumber(authUser?.phoneNumber || null);
       
