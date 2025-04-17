@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { FileUploadProps } from '@/types/upload.types';
 import { useFileDrop } from '@/hooks/useFileDrop';
 import { Camera, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const FileUploadBox: React.FC<FileUploadProps> = ({
   id,
