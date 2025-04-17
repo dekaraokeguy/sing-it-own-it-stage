@@ -1,14 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mic2, Camera, Video, Home, User, PhoneCall } from 'lucide-react';
+import { Mic2, Video, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/Layout/PageLayout';
 import { playClickSound } from '@/utils/soundEffects';
-import QRCodeGenerator from '@/components/QRCodeGenerator';
+import QRShareBox from '@/components/QRShareBox';
+import QRShareModal from '@/components/QRShareModal';
 
 const Index = () => {
   const [logoAnimate, setLogoAnimate] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   
   useEffect(() => {
     // Start animation after a small delay
@@ -54,10 +56,20 @@ const Index = () => {
                   Upload Performance
                 </Link>
               </Button>
+              <Button 
+                onClick={() => {
+                  playClickSound();
+                  setIsQRModalOpen(true);
+                }}
+                className="bg-karaoke-purple hover:bg-karaoke-purple/80 text-white px-6 py-3 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+              >
+                <QrCode className="mr-2 h-5 w-5" />
+                Share App
+              </Button>
             </div>
 
             <div className="mt-8">
-              <QRCodeGenerator 
+              <QRShareBox 
                 url={window.location.href}
                 title="Share Sing It Own It!"
                 description="Scan to share this app with your friends"
@@ -143,6 +155,14 @@ const Index = () => {
           </div>
         </div>
       </div>
+      
+      {/* QR Code Modal */}
+      <QRShareModal 
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        url={window.location.href}
+        title="Sing It Own It"
+      />
     </PageLayout>
   );
 };
