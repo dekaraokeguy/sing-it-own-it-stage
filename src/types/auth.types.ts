@@ -3,6 +3,7 @@ import { User } from 'firebase/auth';
 
 export interface AuthUser {
   id: string;
+  email?: string | null;
   phoneNumber: string | null;
   displayName?: string | null;
   isAnonymous: boolean;
@@ -19,6 +20,7 @@ export const mapFirebaseUser = (user: User | null): AuthUser | null => {
   
   return {
     id: user.uid,
+    email: user.email,
     phoneNumber: user.phoneNumber,
     displayName: user.displayName,
     isAnonymous: user.isAnonymous,

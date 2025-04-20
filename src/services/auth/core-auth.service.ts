@@ -40,11 +40,11 @@ export const getCurrentUser = (): AuthUser | null => {
 // Subscribe to auth state changes (both Firebase and Supabase)
 export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => {
   // Set up Supabase auth listener
-  const supabaseUnsubscribe = supabase.auth.onAuthStateChange((event, session) => {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
     if (session && session.user) {
       callback({
         id: session.user.id,
-        email: session.user.email || '',
+        email: session.user.email || null,
         isAnonymous: false,
         phoneNumber: session.user.phone || null,
       });
@@ -61,7 +61,9 @@ export const onAuthStateChange = (callback: (user: AuthUser | null) => void) => 
 
   // Return a combined unsubscribe function
   return () => {
-    supabaseUnsubscribe.subscription.unsubscribe();
+    if (data.subscription) {
+      data.subscription.unsubscribe();
+    }
     firebaseUnsubscribe();
   };
 };

@@ -24,7 +24,7 @@ export const loginWithSupabase = async (
     return {
       user: {
         id: data.user?.id || '',
-        email: data.user?.email || '',
+        email: data.user?.email || null,
         isAnonymous: false,
         phoneNumber: data.user?.phone || null,
       },
@@ -59,7 +59,7 @@ export const registerWithSupabase = async (
       user: data.user
         ? {
             id: data.user.id,
-            email: data.user.email || '',
+            email: data.user.email || null,
             isAnonymous: false,
             phoneNumber: data.user.phone || null,
           }
@@ -83,7 +83,7 @@ export const getSupabaseSession = async (): Promise<{ user: AuthUser | null }> =
   return {
     user: {
       id: session.user.id,
-      email: session.user.email || '',
+      email: session.user.email || null,
       isAnonymous: false,
       phoneNumber: session.user.phone || null,
     },
@@ -114,7 +114,7 @@ export const onSupabaseAuthStateChange = (callback: (user: AuthUser | null) => v
     if (session && session.user) {
       callback({
         id: session.user.id,
-        email: session.user.email || '',
+        email: session.user.email || null,
         isAnonymous: false,
         phoneNumber: session.user.phone || null,
       });
