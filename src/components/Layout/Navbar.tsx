@@ -1,15 +1,14 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Mic2, Camera, Video, User, PhoneCall, LogIn, LogOut, UserCircle } from 'lucide-react';
+import { Menu, X, Home, Mic2, Camera, Video, User, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
+import AuthNavigation from '@/components/auth/AuthNavigation';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { isLoggedIn, user, phoneNumber } = useAuth();
 
   const navLinks = [
     { name: 'Home', path: '/', icon: Home },
@@ -22,36 +21,6 @@ const Navbar = () => {
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);
-
-  // For mobile, we put login/logout at bottom of the drawer, for desktop in the navbar
-  const AuthButton = () => {
-    if (isLoggedIn) {
-      return (
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2 px-3 py-2 rounded-md"
-          onClick={() => window.location.assign('/logout')}
-        >
-          <UserCircle className="h-5 w-5 text-karaoke-yellow" />
-          {user?.email || phoneNumber || 'Account'}
-          <LogOut className="h-4 w-4 ml-1" />
-        </Button>
-      );
-    }
-    return (
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        className="border-karaoke-yellow text-karaoke-yellow hover:bg-karaoke-yellow/20 flex items-center gap-2 px-3 py-2"
-      >
-        <Link to="/login">
-          <LogIn className="h-4 w-4 mr-1" />
-          Login
-        </Link>
-      </Button>
-    );
-  };
 
   return (
     <nav className="bg-gradient-to-r from-karaoke-purple to-karaoke-pink text-white shadow-md">
@@ -87,7 +56,7 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            <AuthButton />
+            <AuthNavigation />
           </div>
 
           {/* Mobile menu button */}
@@ -123,7 +92,7 @@ const Navbar = () => {
               );
             })}
             <div className="mt-6 border-t border-white/10 pt-4">
-              <AuthButton />
+              <AuthNavigation />
             </div>
             <button
               onClick={toggleMenu}
