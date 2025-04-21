@@ -17,7 +17,7 @@ import { logout } from '@/services/auth';
 import { playClickSound } from '@/utils/soundEffects';
 
 const AuthNavigation: React.FC = () => {
-  const { isLoggedIn, user, phoneNumber } = useAuth();
+  const { isLoggedIn, phoneNumber } = useAuth();
   
   const handleLogout = async () => {
     playClickSound();
@@ -38,7 +38,7 @@ const AuthNavigation: React.FC = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-black/80 text-white border-karaoke-pink">
             <DropdownMenuLabel>
-              {user?.email || phoneNumber || 'My Account'}
+              {phoneNumber || 'My Account'}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-white/20" />
             <DropdownMenuItem 
