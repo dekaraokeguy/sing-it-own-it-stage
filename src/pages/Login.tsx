@@ -1,24 +1,55 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/Layout/PageLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { WhatsAppInput } from '@/components/upload/WhatsAppInput';
 import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { playClickSound } from '@/utils/soundEffects';
 
 const Login = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Redirect if already logged in
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoggedIn) {
       navigate('/');
     }
   }, [isLoggedIn, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    playClickSound();
+    
+    if (!whatsappNumber || whatsappNumber.length < 5) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Store in localStorage for now (this will be replaced with proper auth later)
+      localStorage.setItem('phone_number', whatsappNumber);
+      
+      toast.success("Login Successful");
+      navigate('/');
+      
+      // Force reload to update auth state across the app
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || "Could not log in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   return (
     <PageLayout>
@@ -35,26 +66,35 @@ const Login = () => {
           </div>
           
           <Card className="border-white/10 bg-black/40 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-karaoke-yellow">Sign In</CardTitle>
-              <CardDescription>Login with your WhatsApp number</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <WhatsAppInput 
-                  value={whatsappNumber} 
-                  onChange={setWhatsappNumber}
-                />
-                <div className="text-xs text-white/70 mt-2">
-                  Login with your WhatsApp number for quick access
+            <form onSubmit={handleLogin}>
+              <CardHeader>
+                <CardTitle className="text-karaoke-yellow">Sign In</CardTitle>
+                <CardDescription>Login with your WhatsApp number</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <WhatsAppInput 
+                    value={whatsappNumber} 
+                    onChange={setWhatsappNumber}
+                  />
+                  <div className="text-xs text-white/70 mt-2">
+                    Login with your WhatsApp number for quick access
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col items-center">
-              <p className="text-xs text-white/60 mt-4">
-                By signing in, you agree to our Terms of Service and Privacy Policy
-              </p>
-            </CardFooter>
+              </CardContent>
+              <CardFooter className="flex flex-col gap-4">
+                <Button 
+                  type="submit"
+                  className="w-full bg-karaoke-pink hover:bg-karaoke-pink/80"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Logging in...' : 'Login / Sign Up'}
+                </Button>
+                <p className="text-xs text-white/60">
+                  By signing in, you agree to our Terms of Service and Privacy Policy
+                </p>
+              </CardFooter>
+            </form>
           </Card>
         </div>
       </div>

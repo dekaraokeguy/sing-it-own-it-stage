@@ -6,16 +6,16 @@ import { useVoteLimiter } from '@/hooks/useVoteLimiter';
 import { playClickSound } from '@/utils/soundEffects';
 import PageLayout from '@/components/Layout/PageLayout';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import QRCodeGenerator from '@/components/QRCodeGenerator';
 import PerformanceCard from '@/components/performance/PerformanceCard';
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+import { useAuth } from '@/context/AuthContext';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { Performance } from '@/firebase/firestore';
 import QRShareBox from '@/components/QRShareBox';
+import { toast } from 'sonner';
 
 const PerformanceVideos = () => {
-  const { isLoggedIn } = useFirebaseAuth();
+  const { isLoggedIn } = useAuth();
   const [videos, setVideos] = useState<Performance[]>([]);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,7 +41,6 @@ const PerformanceVideos = () => {
       } catch (error) {
         console.error('Error fetching performances:', error);
         
-        // Fall back to mock data if API fails
         setVideos([
           { 
             id: '1', 
@@ -60,6 +59,25 @@ const PerformanceVideos = () => {
     
     fetchPerformances();
   }, []);
+
+  const handleLogin = async () => {
+    playClickSound();
+    
+    if (!phoneNumber || phoneNumber.length < 5) {
+      toast.error("Please enter a valid phone number.");
+      return;
+    }
+    
+    try {
+      localStorage.setItem('phone_number', phoneNumber);
+      toast.success("Login Successful");
+      
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || "Could not log in. Please try again.");
+    }
+  };
 
   const filteredVideos = videos.filter(video => 
     video.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -81,16 +99,6 @@ const PerformanceVideos = () => {
             <p className="text-xl">Browse all performance videos!</p>
           </div>
 
-          <div className="w-full flex flex-col md:flex-row md:justify-end mb-6 gap-4">
-            <div className="mx-auto md:mx-0 w-full max-w-xs">
-              <QRShareBox 
-                url={window.location.origin + '/performance-videos'}
-                title="Share Performance Videos"
-                description="Scan to browse all karaoke performances"
-              />
-            </div>
-          </div>
-
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="md:w-2/3">
               {!isLoggedIn && (
@@ -108,7 +116,7 @@ const PerformanceVideos = () => {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button 
-                            onClick={() => playClickSound()}
+                            onClick={handleLogin}
                             className="bg-green-500 hover:bg-green-600 rounded-l-none flex items-center"
                           >
                             Login
@@ -136,8 +144,8 @@ const PerformanceVideos = () => {
             </div>
             
             <div className="md:w-1/3">
-              <QRCodeGenerator 
-                url={window.location.href}
+              <QRShareBox 
+                url={window.location.origin + '/performance-videos'}
                 title="Share Performance Videos"
                 description="Scan to browse all karaoke performances"
               />

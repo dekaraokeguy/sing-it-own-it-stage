@@ -9,7 +9,7 @@ import QRShareBox from '@/components/QRShareBox';
 import { playClickSound } from '@/utils/soundEffects';
 import { collection, getDocs, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/firebase/config';
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+import { useAuth } from '@/context/AuthContext';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Performance {
@@ -22,7 +22,7 @@ interface Performance {
 }
 
 const Performances = () => {
-  const { isLoggedIn, user } = useFirebaseAuth();
+  const { isLoggedIn } = useAuth();
   const [videos, setVideos] = useState<Performance[]>([]);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,6 +71,8 @@ const Performances = () => {
     try {
       localStorage.setItem('phone_number', phoneNumber);
       toast.success("Login Successful");
+      
+      window.location.reload();
     } catch (error: any) {
       console.error('Login error:', error);
       toast.error(error.message || "Could not log in. Please try again.");
@@ -133,16 +135,6 @@ const Performances = () => {
               className="h-32 mx-auto mb-4"
             />
             <p className="text-xl">Vote for your favorite performances!</p>
-          </div>
-
-          <div className="w-full flex flex-col md:flex-row md:justify-end mb-6 gap-4">
-            <div className="mx-auto md:mx-0 w-full max-w-xs">
-              <QRShareBox 
-                url={window.location.origin + '/performances'}
-                title="Share Sing It Own It Countdown"
-                description="Scan to view & vote the karaoke countdown!"
-              />
-            </div>
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -219,7 +211,11 @@ const Performances = () => {
             </div>
             
             <div className="md:w-1/3">
-              <QRShareBox />
+              <QRShareBox 
+                url={window.location.origin + '/performances'}
+                title="Sing It Own It Countdown"
+                description="Scan to view & vote on the karaoke countdown!"
+              />
             </div>
           </div>
           
