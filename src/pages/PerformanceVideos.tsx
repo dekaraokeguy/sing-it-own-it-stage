@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { Performance } from '@/firebase/firestore';
+import QRShareBox from '@/components/QRShareBox';
 
 const PerformanceVideos = () => {
   const { isLoggedIn } = useFirebaseAuth();
@@ -61,13 +61,11 @@ const PerformanceVideos = () => {
     fetchPerformances();
   }, []);
 
-  // Filter videos by search term
   const filteredVideos = videos.filter(video => 
     video.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     video.uploader_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort videos by votes in descending order
   const sortedVideos = [...filteredVideos].sort((a, b) => b.votes - a.votes);
 
   return (
@@ -82,7 +80,17 @@ const PerformanceVideos = () => {
             />
             <p className="text-xl">Browse all performance videos!</p>
           </div>
-          
+
+          <div className="w-full flex flex-col md:flex-row md:justify-end mb-6 gap-4">
+            <div className="mx-auto md:mx-0 w-full max-w-xs">
+              <QRShareBox 
+                url={window.location.origin + '/performance-videos'}
+                title="Share Performance Videos"
+                description="Scan to browse all karaoke performances"
+              />
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="md:w-2/3">
               {!isLoggedIn && (

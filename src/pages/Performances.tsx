@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import PageLayout from '@/components/Layout/PageLayout';
 import { Input } from '@/components/ui/input';
 import { useVoteLimiter } from '@/hooks/useVoteLimiter';
-import QRCodeShare from '@/components/QRCodeShare';
+import QRShareBox from '@/components/QRShareBox';
 import { playClickSound } from '@/utils/soundEffects';
 import { collection, getDocs, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/firebase/config';
@@ -69,7 +69,6 @@ const Performances = () => {
     }
     
     try {
-      // Store phone number in localStorage
       localStorage.setItem('phone_number', phoneNumber);
       toast.success("Login Successful");
     } catch (error: any) {
@@ -78,7 +77,6 @@ const Performances = () => {
     }
   };
 
-  // Handle voting
   const handleVote = async (videoId: string, rating: number) => {
     playClickSound();
     
@@ -102,7 +100,6 @@ const Performances = () => {
         votes: increment(1)
       });
       
-      // Update local state
       setVideos(prevVideos => 
         prevVideos.map(video => 
           video.id === videoId 
@@ -118,13 +115,11 @@ const Performances = () => {
     }
   };
 
-  // Filter videos by search term
   const filteredVideos = videos.filter(video => 
     video.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     video.uploader.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort videos by votes in descending order
   const sortedVideos = [...filteredVideos].sort((a, b) => b.votes - a.votes);
 
   return (
@@ -138,6 +133,16 @@ const Performances = () => {
               className="h-32 mx-auto mb-4"
             />
             <p className="text-xl">Vote for your favorite performances!</p>
+          </div>
+
+          <div className="w-full flex flex-col md:flex-row md:justify-end mb-6 gap-4">
+            <div className="mx-auto md:mx-0 w-full max-w-xs">
+              <QRShareBox 
+                url={window.location.origin + '/performances'}
+                title="Share Sing It Own It Countdown"
+                description="Scan to view & vote the karaoke countdown!"
+              />
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -214,7 +219,7 @@ const Performances = () => {
             </div>
             
             <div className="md:w-1/3">
-              <QRCodeShare />
+              <QRShareBox />
             </div>
           </div>
           
@@ -290,7 +295,6 @@ const Performances = () => {
                         </div>
                       </div>
                       
-                      {/* Vote status messages */}
                       {!isLoggedIn ? (
                         <p className="text-xs text-white/50 mt-1 italic text-right">Login to vote</p>
                       ) : !canVoteFor(video.id) ? (
@@ -305,7 +309,6 @@ const Performances = () => {
             </div>
           )}
           
-          {/* Empty state */}
           {!isLoading && sortedVideos.length === 0 && (
             <div className="text-center py-12">
               <p className="text-xl">No performances found. {searchTerm ? 'Try a different search term.' : 'Be the first to upload!'}</p>
@@ -315,7 +318,6 @@ const Performances = () => {
             </div>
           )}
           
-          {/* Sponsor section */}
           <div className="mt-8 border-t border-white/10 pt-8 opacity-70 hover:opacity-90 transition-opacity">
             <div className="text-center mb-2">
               <p className="text-sm text-white/50">Our Partners</p>
@@ -345,7 +347,6 @@ const Performances = () => {
   );
 };
 
-// Helper function to format time until next vote
 const formatTimeUntil = (date: Date): string => {
   const now = new Date();
   const diffMs = date.getTime() - now.getTime();
