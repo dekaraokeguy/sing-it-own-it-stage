@@ -6,10 +6,12 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import AuthNavigation from '@/components/auth/AuthNavigation';
 import { Sheet, SheetContent, SheetOverlay } from '@/components/ui/sheet';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { isLoggedIn } = useAuth();
 
   const navLinks = [
     { name: 'Home', path: '/', icon: Home },
@@ -57,14 +59,19 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            <AuthNavigation />
+            
+            {/* Auth controls always visible on desktop */}
+            <div className="ml-4">
+              <AuthNavigation />
+            </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile: Auth + menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <AuthNavigation />
             <button
               onClick={toggleMenu}
-              className="text-white hover:text-white/80 focus:outline-none"
+              className="text-white hover:text-white/80 focus:outline-none ml-2"
               aria-label="Open navigation menu"
             >
               <Menu className="h-6 w-6" />
@@ -117,9 +124,6 @@ const Navbar = () => {
                   </Link>
                 );
               })}
-            </div>
-            <div className="mt-auto border-t border-white/10 pt-6 px-4 pb-6">
-              <AuthNavigation />
             </div>
           </div>
         </SheetContent>

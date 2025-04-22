@@ -3,15 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { LogIn, LogOut, UserCircle } from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { LogIn, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { logout } from '@/services/auth';
 import { playClickSound } from '@/utils/soundEffects';
@@ -48,34 +40,22 @@ const AuthNavigation: React.FC = () => {
           <span className="text-karaoke-yellow text-sm hidden sm:inline">
             Signed in: {phoneNumber || 'User'}
           </span>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="border-karaoke-pink bg-black/50">
-                <UserCircle className="h-5 w-5 mr-2 text-karaoke-yellow" />
-                <span className="text-white">Account</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-black/90 text-white border-karaoke-pink">
-              <DropdownMenuLabel>
-                {phoneNumber || 'My Account'}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/20" />
-              <DropdownMenuItem 
-                className="cursor-pointer hover:bg-karaoke-purple/30 flex items-center"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button 
+            variant="destructive" 
+            size="sm"
+            className="bg-red-500 hover:bg-red-600 text-white"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
       ) : (
         <Button 
           asChild
-          variant="outline" 
+          variant="default" 
           size="sm"
-          className="border-karaoke-yellow text-karaoke-yellow hover:bg-karaoke-yellow/20"
+          className="bg-karaoke-yellow text-black hover:bg-karaoke-yellow/80"
           onClick={handleLoginClick}
         >
           <Link to="/login">

@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, phoneNumber } = useAuth();
   
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,6 +31,13 @@ const Login = () => {
     }
   }, [isLoggedIn, navigate]);
 
+  // Set initial whatsapp number if logged in
+  useEffect(() => {
+    if (phoneNumber) {
+      setWhatsappNumber(phoneNumber);
+    }
+  }, [phoneNumber]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
@@ -46,7 +53,7 @@ const Login = () => {
       // Store in localStorage for now (this will be replaced with proper auth later)
       localStorage.setItem('phone_number', whatsappNumber);
       
-      toast.success("Login Successful");
+      toast.success("Login Successful!");
       setShowSuccess(true);
       
       // Short delay before navigating
@@ -81,7 +88,7 @@ const Login = () => {
             <Card className="border-white/10 bg-black/40 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-green-500">Login Successful!</CardTitle>
-                <CardDescription>You are now signed in</CardDescription>
+                <CardDescription>You are now signed in as: {whatsappNumber}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Alert className="border-green-500 bg-green-900/20">
@@ -92,15 +99,17 @@ const Login = () => {
                   </AlertDescription>
                 </Alert>
               </CardContent>
-              <CardFooter>
-                <Link to="/" className="w-full">
-                  <Button 
-                    className="w-full bg-karaoke-pink hover:bg-karaoke-pink/80 mt-4"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Go to Home Page
-                  </Button>
-                </Link>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  onClick={() => {
+                    playClickSound();
+                    navigate('/');
+                  }}
+                  className="w-full bg-karaoke-pink hover:bg-karaoke-pink/80 mt-4"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Go to Home Page
+                </Button>
               </CardFooter>
             </Card>
           ) : (
