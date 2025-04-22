@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, UploadCloud } from 'lucide-react';
 import { FileUploadBox } from './FileUploadBox';
 import { WhatsAppInput } from './WhatsAppInput';
 import { toast } from 'sonner';
@@ -14,25 +14,39 @@ import { storage, db } from '@/firebase/config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { UploadFormData } from '@/types/upload.types';
+import { useAuth } from '@/context/AuthContext';
 
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024;  // 5MB
 
 export const UploadForm: React.FC = () => {
+  const { isLoggedIn, phoneNumber } = useAuth();
   const [formData, setFormData] = useState<UploadFormData>({
-    whatsappNumber: '',
+    whatsappNumber: phoneNumber || '',
     title: '',
     videoFile: null,
     photoFile: null
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
     
+    setUploadSuccess(false);
+    setUploadError(null);
+    
     if (!formData.whatsappNumber || !formData.title || !formData.videoFile) {
-      toast.error("Please fill in all required fields.");
+      setUploadError("Please fill in all required fields and select a video.");
+      toast.error("Please fill in all required fields and select a video.");
+      return;
+    }
+    
+    if (!isLoggedIn) {
+      setUploadError("You must be logged in to upload performances.");
+      toast.error("You must be logged in to upload performances.");
       return;
     }
     
@@ -83,11 +97,12 @@ export const UploadForm: React.FC = () => {
         created_at: serverTimestamp()
       });
       
-      toast.success("Your performance has been uploaded and will be reviewed shortly.");
+      setUploadSuccess(true);
+      toast.success("Your performance has been uploaded and will be reviewed shortly!");
       
       // Reset form
       setFormData({
-        whatsappNumber: '',
+        whatsappNumber: phoneNumber || '',
         title: '',
         videoFile: null,
         photoFile: null
@@ -95,6 +110,7 @@ export const UploadForm: React.FC = () => {
       
     } catch (error: any) {
       console.error('Upload error:', error);
+      setUploadError(error.message || "There was an error uploading your performance.");
       toast.error(error.message || "There was an error uploading your performance.");
     } finally {
       setIsUploading(false);
@@ -103,13 +119,35 @@ export const UploadForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Alert className="mb-6 border-karaoke-yellow bg-black/40">
-        <AlertCircle className="h-4 w-4 text-karaoke-yellow" />
-        <AlertTitle className="text-karaoke-yellow">Important</AlertTitle>
-        <AlertDescription className="text-white/80">
-          Enter your WhatsApp number to log in and upload your performance to Sing It Own It!
-        </AlertDescription>
-      </Alert>
+      {!isLoggedIn && (
+        <Alert className="mb-6 border-karaoke-yellow bg-black/40">
+          <AlertCircle className="h-4 w-4 text-karaoke-yellow" />
+          <AlertTitle className="text-karaoke-yellow">Login Required</AlertTitle>
+          <AlertDescription className="text-white/80">
+            You need to log in with your WhatsApp number to upload performances.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {uploadSuccess && (
+        <Alert className="mb-6 border-green-500 bg-green-900/20">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-500">Upload Successful!</AlertTitle>
+          <AlertDescription className="text-white/80">
+            Your performance has been uploaded and will be reviewed shortly. Thank you!
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {uploadError && (
+        <Alert className="mb-6 border-red-500 bg-red-900/20">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertTitle className="text-red-500">Upload Failed</AlertTitle>
+          <AlertDescription className="text-white/80">
+            {uploadError}
+          </AlertDescription>
+        </Alert>
+      )}
       
       <WhatsAppInput
         value={formData.whatsappNumber}
@@ -155,8 +193,25 @@ export const UploadForm: React.FC = () => {
         disabled={isUploading}
         onClick={() => playClickSound()}
       >
-        {isUploading ? "Uploading..." : "Upload Performance"}
+        {isUploading ? (
+          <>
+            <div className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white animate-spin mr-2" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <UploadCloud className="mr-2 h-5 w-5" />
+            Upload Performance
+          </>
+        )}
       </Button>
+      
+      <div className="text-center text-sm text-white/60 mt-2">
+        {isLoggedIn ? 
+          "Your upload will be tied to your account." :
+          "Please log in before uploading your performance."
+        }
+      </div>
     </form>
   );
 };
