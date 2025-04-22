@@ -18,7 +18,6 @@ const AuthNavigation: React.FC = () => {
       const result = await logout();
       if (!result.error) {
         toast.success('Logged out successfully');
-        // Force navigation to home page after logout
         navigate('/');
       } else {
         toast.error('Failed to logout: ' + result.error);
@@ -37,13 +36,13 @@ const AuthNavigation: React.FC = () => {
     <div className="flex items-center space-x-2">
       {isLoggedIn ? (
         <div className="flex items-center gap-2">
-          <span className="text-karaoke-yellow text-sm hidden sm:inline">
-            Signed in: {phoneNumber || 'User'}
+          <span className="text-karaoke-yellow text-sm">
+            {phoneNumber || 'User'}
           </span>
           <Button 
             variant="destructive" 
             size="sm"
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className="bg-red-500 hover:bg-red-600 text-white font-semibold"
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -55,12 +54,12 @@ const AuthNavigation: React.FC = () => {
           asChild
           variant="default" 
           size="sm"
-          className="bg-karaoke-yellow text-black hover:bg-karaoke-yellow/80"
+          className="bg-karaoke-yellow text-black hover:bg-karaoke-yellow/80 font-semibold"
           onClick={handleLoginClick}
         >
           <Link to="/login">
             <LogIn className="mr-2 h-4 w-4" />
-            Login
+            Sign In
           </Link>
         </Button>
       )}
