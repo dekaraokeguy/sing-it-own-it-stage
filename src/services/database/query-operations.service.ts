@@ -9,7 +9,7 @@ import {
   DocumentData,
   QueryConstraint
 } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { db } from '../../firebase';
 import { DbItem, QueryFilter, SortOption } from '../../types/database.types';
 import { convertTimestamps } from './utils';
 

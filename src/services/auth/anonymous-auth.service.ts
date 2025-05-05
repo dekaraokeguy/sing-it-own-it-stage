@@ -1,6 +1,6 @@
 
 import { signInAnonymously } from 'firebase/auth';
-import { auth } from '../../firebase/config';
+import { auth } from '../../firebase';
 import { AuthResult, mapFirebaseUser } from '../../types/auth.types';
 import { toast } from 'sonner';
 

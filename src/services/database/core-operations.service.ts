@@ -10,7 +10,7 @@ import {
   DocumentReference,
   DocumentData
 } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { db } from '../../firebase';
 import { DbItem } from '../../types/database.types';
 import { convertTimestamps } from './utils';
 

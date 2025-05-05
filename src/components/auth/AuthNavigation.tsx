@@ -36,7 +36,7 @@ const AuthNavigation: React.FC = () => {
     <div className="flex items-center space-x-2">
       {isLoggedIn ? (
         <div className="flex items-center gap-2">
-          <span className="text-karaoke-yellow text-sm">
+          <span className="text-karaoke-yellow text-sm mr-2">
             {phoneNumber || 'User'}
           </span>
           <Button 

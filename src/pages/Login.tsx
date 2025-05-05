@@ -8,7 +8,7 @@ import { WhatsAppInput } from '@/components/upload/WhatsAppInput';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { playClickSound } from '@/utils/soundEffects';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Login = () => {
@@ -18,6 +18,7 @@ const Login = () => {
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(true);
   
   // Redirect if already logged in
   useEffect(() => {
@@ -78,7 +79,7 @@ const Login = () => {
               </CardHeader>
               <CardContent>
                 <Alert className="border-green-500 bg-green-900/20">
-                  <AlertCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-green-500" />
                   <AlertTitle className="text-green-500">Success</AlertTitle>
                   <AlertDescription className="text-white/80">
                     Taking you to the home page...
@@ -90,7 +91,9 @@ const Login = () => {
             <Card className="border-white/10 bg-black/40 backdrop-blur-sm">
               <form onSubmit={handleLogin}>
                 <CardHeader>
-                  <CardTitle className="text-karaoke-yellow">Sign In</CardTitle>
+                  <CardTitle className="text-karaoke-yellow">
+                    {isLoggingIn ? "Sign In" : "Sign Up"}
+                  </CardTitle>
                   <CardDescription>Enter your WhatsApp number to continue</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -99,15 +102,33 @@ const Login = () => {
                       value={whatsappNumber} 
                       onChange={setWhatsappNumber}
                     />
+                    <div className="flex justify-center space-x-2">
+                      <Button
+                        type="button"
+                        variant={isLoggingIn ? "default" : "outline"}
+                        className={isLoggingIn ? "bg-karaoke-yellow text-black hover:bg-karaoke-yellow/80" : "text-white"}
+                        onClick={() => setIsLoggingIn(true)}
+                      >
+                        Sign In
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={!isLoggingIn ? "default" : "outline"}
+                        className={!isLoggingIn ? "bg-karaoke-pink text-white hover:bg-karaoke-pink/80" : "text-white"}
+                        onClick={() => setIsLoggingIn(false)}
+                      >
+                        Sign Up
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
                   <Button 
                     type="submit"
-                    className="w-full bg-karaoke-pink hover:bg-karaoke-pink/80 font-semibold"
+                    className={`w-full font-semibold ${isLoggingIn ? 'bg-karaoke-pink hover:bg-karaoke-pink/80' : 'bg-karaoke-yellow text-black hover:bg-karaoke-yellow/80'}`}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Signing in...' : 'Sign In / Sign Up'}
+                    {isSubmitting ? 'Processing...' : (isLoggingIn ? 'Sign In' : 'Sign Up')}
                   </Button>
                   <Button 
                     variant="link" 
